@@ -163,6 +163,17 @@ mimalloc = { workspace = true }
 [target.'cfg(all(not(target_os = "macos"), not(target_os = "android")))'.dependencies]
 mumble-link = "0.2.0"
 
+# Android entry point (see src/android.rs). Kept target-scoped so desktop
+# builds don't pull these in at all.
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.15"
+log = "0.4"
+
+# Needed so Android can load this as a shared library via android-activity's
+# native-activity glue. Desktop builds ignore the extra cdylib output.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dev-dependencies]
 criterion = { workspace = true }
 world = { package = "veloren-world", path = "../world" }

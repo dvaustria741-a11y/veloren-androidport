@@ -11,7 +11,10 @@
 
 #[macro_use]
 pub mod ui;
+#[cfg(target_os = "android")]
+pub mod android;
 pub mod audio;
+pub mod bootstrap;
 pub mod cli;
 pub mod cmd;
 mod credits;

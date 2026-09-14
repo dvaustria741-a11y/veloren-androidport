@@ -1,10 +1,13 @@
-name: Android Build (aarch64, smoke test)
+name: Android Build (aarch64)
 
-# Stage 1 of the Android port: no game/entry-point changes yet.
-# This job only proves the dependency tree cross-compiles/typechecks
-# for aarch64-linux-android on nightly. It will very likely fail on
-# the first run(s) — that's expected and useful: the failing crate(s)
-# tell us exactly what needs patching/feature-gating next.
+# Stage 1: prove the dependency tree cross-compiles for aarch64-linux-android.
+# Stage 2: enable winit's Android backend (see the `android` feature in
+#          voxygen/Cargo.toml) and exclude mumble-link (not supported on
+#          Bionic libc).
+# Stage 3: add an actual android_main entry point (src/android.rs) so this
+#          is checking something Android could genuinely load, not just an
+#          inert library. `--lib` is intentional: the lib target is what
+#          gets built into the Android .so, not the desktop `bin`.
 
 on:
   push:

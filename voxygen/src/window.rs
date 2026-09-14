@@ -261,6 +261,9 @@ impl Window {
         settings: &Settings,
         runtime: &tokio::runtime::Runtime,
     ) -> Result<(Window, EventLoop), Error> {
+        #[cfg(target_os = "android")]
+        let event_loop = crate::android::build_event_loop();
+        #[cfg(not(target_os = "android"))]
         let event_loop = EventLoop::new().unwrap();
 
         let window = settings.graphics.window;
