@@ -39,6 +39,7 @@ label = "Veloren"
 debuggable = true
 
 [[package.metadata.android.application.activity]]
+name = "android.app.NativeActivity"
 orientation = "landscape"
 
 [features]
