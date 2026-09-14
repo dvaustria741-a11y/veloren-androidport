@@ -22,6 +22,25 @@ It is inspired by games such as Cube World, Legend of Zelda: Breath of the Wild,
 This package includes the official client, Voxygen.
 """
 
+# Stage 4 of the Android port. Deliberately NOT bundling `assets` yet (it's
+# 450MB and unrelated to proving the app boots) -- see crate::android for
+# why we expect this build to open a window and then crash on first asset
+# load. That's the next thing to fix, not this one.
+[package.metadata.android]
+package = "net.veloren.veloren"
+apk_name = "veloren"
+
+[package.metadata.android.sdk]
+min_sdk_version = 24
+target_sdk_version = 34
+
+[package.metadata.android.application]
+label = "Veloren"
+debuggable = true
+
+[[package.metadata.android.application.activity]]
+orientation = "landscape"
+
 [features]
 hot-anim = ["anim/use-dyn-lib"]
 hot-egui = ["voxygen-egui/use-dyn-lib", "egui"]

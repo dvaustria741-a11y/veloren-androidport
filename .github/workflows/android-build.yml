@@ -67,3 +67,66 @@ jobs:
         with:
           name: android-check-log
           path: android-check.log
+
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read rust-toolchain
+        id: toolchain
+        run: echo "channel=$(cat rust-toolchain)" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust (${{ steps.toolchain.outputs.channel }}) with android target
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          targets: aarch64-linux-android
+
+      - name: Set up Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+          add-to-path: false
+
+      - name: Install cargo-apk2
+        run: cargo install cargo-apk2 --locked
+
+      - name: Cache cargo + target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-android-apk-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-android-apk-
+
+      # Stage 4, first pass: no assets bundled (see the comment in
+      # voxygen/Cargo.toml). Goal here is just "does an APK get produced
+      # and does it install" -- whether it stays running past that is the
+      # next question, not this one.
+      - name: Build APK (no assets yet)
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        working-directory: voxygen
+        run: |
+          set -o pipefail
+          cargo apk2 build --no-default-features --features android 2>&1 | tee ../android-apk-build.log
+
+      - name: Upload APK build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-build-log
+          path: android-apk-build.log
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: veloren-android-apk
+          path: target/android-artifacts/**/*.apk
+          if-no-files-found: warn
