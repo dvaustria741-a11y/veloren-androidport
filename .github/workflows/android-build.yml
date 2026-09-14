@@ -1,0 +1,65 @@
+name: Android Build (aarch64, smoke test)
+
+# Stage 1 of the Android port: no game/entry-point changes yet.
+# This job only proves the dependency tree cross-compiles/typechecks
+# for aarch64-linux-android on nightly. It will very likely fail on
+# the first run(s) — that's expected and useful: the failing crate(s)
+# tell us exactly what needs patching/feature-gating next.
+
+on:
+  push:
+    branches: [ android-port ]
+  workflow_dispatch: {}
+
+jobs:
+  check-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read rust-toolchain
+        id: toolchain
+        run: echo "channel=$(cat rust-toolchain)" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust (${{ steps.toolchain.outputs.channel }}) with android target
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          targets: aarch64-linux-android
+
+      - name: Set up Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+          add-to-path: false
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      - name: Cache cargo + target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-android-check-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-android-check-
+
+      - name: cargo check voxygen for aarch64-linux-android
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        # --no-default-features first: voxygen's default features pull in
+        # desktop-only bits (e.g. discord rpc, tracy) that we don't want
+        # to fight in the same run as the real cross-compile issues.
+        run: |
+          cargo ndk -t arm64-v8a -- check -p veloren-voxygen --no-default-features --lib 2>&1 | tee android-check.log
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-check-log
+          path: android-check.log
