@@ -55,7 +55,7 @@ jobs:
         # desktop-only bits (e.g. discord rpc, tracy) that we don't want
         # to fight in the same run as the real cross-compile issues.
         run: |
-          cargo ndk -t arm64-v8a -- check -p veloren-voxygen --no-default-features --lib 2>&1 | tee android-check.log
+          cargo ndk -t arm64-v8a -- check -p veloren-voxygen --no-default-features --features android --lib 2>&1 | tee android-check.log
 
       - name: Upload build log
         if: always()

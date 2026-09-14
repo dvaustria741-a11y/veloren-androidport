@@ -36,6 +36,10 @@ egui-ui = ["voxygen-egui", "egui", "egui-wgpu", "egui-winit"]
 shaderc-from-source = ["shaderc/build-from-source"]
 discord = ["discord-sdk"]
 bin_cmd_doc_gen = []
+# Stage 2 of the Android port: pulls in winit's native-activity backend
+# (android-activity crate) so the lib compiles as an Android app.
+# Kept as an opt-in feature so it never touches the desktop build.
+android = ["winit/android-native-activity"]
 
 # We don't ship egui with published release builds so a separate feature is required that excludes it.
 default-publish = [
