@@ -160,7 +160,7 @@ winres = "0.1"
 mimalloc = { workspace = true }
 
 # Mumble
-[target.'cfg(not(target_os="macos"))'.dependencies]
+[target.'cfg(all(not(target_os = "macos"), not(target_os = "android")))'.dependencies]
 mumble-link = "0.2.0"
 
 [dev-dependencies]
@@ -179,3 +179,4 @@ required-features = []
 [[bin]]
 name = "cmd_doc_gen"
 required-features = ["bin_cmd_doc_gen"]
+
